@@ -29,6 +29,7 @@ def get_model(opt):
     if opt.dataset == "mnist":
         netC = NetC_MNIST().to(opt.device)
 
+    print
     # Optimizer
     optimizerC = torch.optim.SGD(netC.parameters(), opt.lr_C, momentum=0.9, weight_decay=5e-4)
 
@@ -40,6 +41,7 @@ def get_model(opt):
 
 def train(netC, optimizerC, schedulerC, train_dl, noise_grid, identity_grid, tf_writer, epoch, opt):
     print(" Train:")
+    # print(f"netC: {netC}")
     netC.train()
     rate_bd = opt.pc
     total_loss_ce = 0

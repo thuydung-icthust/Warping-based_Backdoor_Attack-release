@@ -36,7 +36,7 @@ def outlier_detection(l1_norm_list, idx_mapping, opt):
         print("This is a backdoor model")
 
     if opt.to_file:
-        # result_path = os.path.join(opt.result, opt.saving_prefix, opt.dataset)
+        result_path = os.path.join(opt.result, opt.saving_prefix, opt.dataset)
         output_path = os.path.join(
             result_path, "{}_{}_output.txt".format(opt.attack_mode, opt.dataset, opt.attack_mode)
         )
@@ -114,7 +114,7 @@ def main():
 
         masks = []
         idx_mapping = {}
-
+        print(f"opt: {opt}")
         for target_label in range(opt.total_label):
             print("----------------- Analyzing label: {} -----------------".format(target_label))
             opt.target_label = target_label

@@ -29,6 +29,7 @@ def get_model(opt):
     if opt.dataset == "mnist":
         netC = NetC_MNIST().to(opt.device)
 
+    print(f"Successfully get model netC: {netC}")
     # Optimizer
     optimizerC = torch.optim.SGD(netC.parameters(), opt.lr_C, momentum=0.9, weight_decay=5e-4)
 

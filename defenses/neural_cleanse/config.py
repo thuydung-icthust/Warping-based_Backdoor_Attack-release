@@ -11,6 +11,7 @@ def get_argument():
     parser.add_argument("--result", type=str, default="./results")
     parser.add_argument("--dataset", type=str, default="mnist")
     parser.add_argument("--attack_mode", type=str, default="all2one")
+    parser.add_argument("--backdoor_type", type=str, default="dba")
     parser.add_argument("--temps", type=str, default="./temps")
 
     # ---------------------------- For Neural Cleanse --------------------------
@@ -33,6 +34,7 @@ def get_argument():
 
     parser.add_argument("--to_file", type=bool, default=True)
     parser.add_argument("--n_times_test", type=int, default=10)
+    # parser.add_argument("--backdoor_type", type=str, default="dba")
 
     parser.add_argument("--use_norm", type=int, default=1)
 

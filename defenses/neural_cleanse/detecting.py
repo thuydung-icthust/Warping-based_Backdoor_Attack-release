@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from utils.utils import progress_bar
 from networks.models import NetC_MNIST, Normalize, Denormalize
+from networks.dba import MnistNet
 from utils.dataloader import get_dataloader
 
 
@@ -23,7 +24,7 @@ class RegressionModel(nn.Module):
         self.mask_tanh = nn.Parameter(torch.tensor(init_mask))
         self.pattern_tanh = nn.Parameter(torch.tensor(init_pattern))
 
-        self.classifier = self._get_classifier(opt)
+        self.classifier = self._get_classifier(opt) # ==> The classification model
         self.normalizer = self._get_normalize(opt)
         self.denormalizer = self._get_denormalize(opt)
 
@@ -59,8 +60,15 @@ class RegressionModel(nn.Module):
             opt.checkpoints, opt.dataset, "{}_{}_morph.pth.tar".format(opt.dataset, opt.attack_mode)
         )
 
+        if opt.backdoor_type == "dba":
+            ckpt_path = os.path.join(opt.checkpoints, opt.dataset, "model_last.pt.tar.epoch_10")
+            classifier = MnistNet(name='Local')
+        print("Loaded checkpoint path successfully")
+
         state_dict = torch.load(ckpt_path)
-        classifier.load_state_dict(state_dict["netC"])
+        # classifier.load_state_dict(state_dict["netC"])
+        classifier.load_state_dict(state_dict["state_dict"])
+
         for param in classifier.parameters():
             param.requires_grad = False
         classifier.eval()
@@ -149,10 +157,12 @@ class Recorder:
 
 def train(opt, init_mask, init_pattern):
 
+    print(f"train_here:")
+
     test_dataloader = get_dataloader(opt, train=False)
 
     # Build regression model
-    regression_model = RegressionModel(opt, init_mask, init_pattern).to(opt.device)
+    regression_model = RegressionModel(opt, init_mask, init_pattern).to(opt.device) # The targeted trnasform model
 
     # Set optimizer
     optimizerR = torch.optim.Adam(regression_model.parameters(), lr=opt.lr, betas=(0.5, 0.9))
@@ -198,7 +208,7 @@ def train_step(regression_model, optimizerR, dataloader, recorder, epoch, opt):
 
         loss_ce = cross_entropy(predictions, target_labels)
         loss_reg = torch.norm(regression_model.get_raw_mask(), opt.use_norm)
-        total_loss = loss_ce + recorder.cost * loss_reg
+        total_loss = loss_ce + recorder.cost * loss_reg # --> eqn (3) in the original paper
         total_loss.backward()
         optimizerR.step()
 
