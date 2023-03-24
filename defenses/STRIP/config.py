@@ -5,12 +5,14 @@ def get_argument():
     parser = argparse.ArgumentParser()
 
     # Directory option
-    parser.add_argument("--data_root", type=str, default="/home/ubuntu/temps")
+    parser.add_argument("--data_root", type=str, default="../../data")
     parser.add_argument("--checkpoints", type=str, default="../../checkpoints")
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--results", type=str, default="./results")
     parser.add_argument("--dataset", type=str, default="cifar10")
     parser.add_argument("--attack_mode", type=str, default="all2one")
+    parser.add_argument("--backdoor_type", type=str, default="dba")
+    parser.add_argument("--ckpt_file", type=str, default="lira_mnist_lenet_autoencoder_0.05.pt")
     parser.add_argument("--temps", type=str, default="./temps")
 
     # ---------------------------- For Neural Cleanse --------------------------
