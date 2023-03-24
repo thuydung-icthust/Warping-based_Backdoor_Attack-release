@@ -10,7 +10,10 @@ import numpy as np
 
 from PIL import Image
 from torch.utils.tensorboard import SummaryWriter
-
+IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
+IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
+IMAGENET_MIN  = ((np.array([0,0,0]) - np.array(IMAGENET_DEFAULT_MEAN)) / np.array(IMAGENET_DEFAULT_STD)).min()
+IMAGENET_MAX  = ((np.array([1,1,1]) - np.array(IMAGENET_DEFAULT_MEAN)) / np.array(IMAGENET_DEFAULT_STD)).max()
 
 class ToNumpy:
     def __call__(self, x):
@@ -50,6 +53,8 @@ def get_transform(opt, train=True, pretensor_transform=False):
         transforms_list.append(transforms.Normalize([0.5], [0.5]))
     elif opt.dataset == "gtsrb" or opt.dataset == "celeba":
         pass
+    elif opt.dataset == "timagenet":
+        transforms_list.append(transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD))
     else:
         raise Exception("Invalid Dataset")
     return transforms.Compose(transforms_list)
@@ -138,6 +143,24 @@ class CelebA_attr(data.Dataset):
         target = self._convert_attributes(target[self.list_attributes])
         return (input, target)
 
+# def get_transform(opt, train=True, pretensor_transform=False):
+#     transforms_list = []
+#     transforms_list.append(transforms.Resize((opt.input_height, opt.input_width)))
+#     if pretensor_transform:
+#         if train:
+#             transforms_list.append(transforms.RandomCrop((opt.input_height, opt.input_width), padding=opt.random_crop))
+#             transforms_list.append(transforms.RandomRotation(opt.random_rotation))
+#             if opt.dataset == "cifar10":
+#                 transforms_list.append(transforms.RandomHorizontalFlip(p=0.5))
+
+#     transforms_list.append(transforms.ToTensor())
+    
+#     if opt.dataset == 'mnist':
+#         transforms_list.append(transforms.Normalize([0.5], [0.5]))
+#     else:
+#         transforms_list.append(transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD))
+    
+#     return transforms.Compose(transforms_list)
 
 def get_dataloader(opt, train=True, pretensor_transform=False):
     transform = get_transform(opt, train, pretensor_transform)
@@ -153,6 +176,13 @@ def get_dataloader(opt, train=True, pretensor_transform=False):
         else:
             split = "test"
         dataset = CelebA_attr(opt, split, transform)
+    elif opt.dataset in ['timagenet', 'tiny-imagenet32']:
+        if train:
+            split = 'train'
+        else:
+            split = 'test'
+        dataset = torchvision.datasets.ImageFolder(
+            os.path.join(opt.data_root, 'tiny-imagenet-200', split), transform=transform)
     else:
         raise Exception("Invalid dataset")
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.bs, num_workers=opt.num_workers, shuffle=True)
@@ -160,6 +190,7 @@ def get_dataloader(opt, train=True, pretensor_transform=False):
 
 
 def get_dataset(opt, train=True):
+    transform = get_transform(opt, train)
     if opt.dataset == "gtsrb":
         dataset = GTSRB(
             opt,
@@ -180,6 +211,13 @@ def get_dataset(opt, train=True):
             split,
             transforms=transforms.Compose([transforms.Resize((opt.input_height, opt.input_width)), ToNumpy()]),
         )
+    elif opt.dataset == "timagenet":
+        if train:
+            split = 'train'
+        else:
+            split = 'test'
+        dataset = torchvision.datasets.ImageFolder(
+            os.path.join(opt.data_root, 'tiny-imagenet-200', split), transform=transform)
     else:
         raise Exception("Invalid dataset")
     return dataset

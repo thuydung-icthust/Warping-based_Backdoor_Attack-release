@@ -68,6 +68,8 @@ class Denormalizer:
             denormalizer = Denormalize(opt, [0.5], [0.5])
         elif opt.dataset == "gtsrb" or opt.dataset == "celeba":
             denormalizer = None
+        elif opt.dataset in ['timagenet', 'tiny-imagenet32']:
+            denormalizer = Denormalize(opt, [0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         else:
             raise Exception("Invalid dataset")
         return denormalizer

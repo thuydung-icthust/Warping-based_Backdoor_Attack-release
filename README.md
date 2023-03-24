@@ -95,7 +95,7 @@ Run the command
 ```bash
 $ cd defenses/STRIP
 $ python STRIP.py --dataset <datasetName> --attack_mode <attackMode>
-
+checkpoints/mnist/lira_mnist_lenet_autoencoder_0.05.pt
 ```
 The result will be printed on screen, and all entropy values are logged in `results` folder.
 

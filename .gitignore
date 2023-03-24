@@ -5,6 +5,9 @@ __pycache__/
 *saved_*
 *$py.class
 data/
+*checkpoints
+saved_models
+*.zip
 
 # C extensions
 *.so

@@ -13,8 +13,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from utils.utils import progress_bar
 from networks.models import NetC_MNIST, Normalize, Denormalize
-from networks.dba import MnistNet
+from networks.dba import MnistNet, ResNet18
 from utils.dataloader import get_dataloader
+import networks.lira as vgg9
 
 
 class RegressionModel(nn.Module):
@@ -61,13 +62,30 @@ class RegressionModel(nn.Module):
         )
 
         if opt.backdoor_type == "dba":
-            ckpt_path = os.path.join(opt.checkpoints, opt.dataset, "model_last.pt.tar.epoch_10")
-            classifier = MnistNet(name='Local')
+            if opt.dataset == "mnist":
+                ckpt_path = os.path.join(opt.checkpoints, opt.dataset, "model_last.pt.tar")
+                classifier = MnistNet(name='Local')
+            elif opt.dataset == "cifar10":
+                ckpt_path = os.path.join(opt.checkpoints, opt.dataset, "model_last.pt.tar.epoch_400")
+                classifier = ResNet18(name='Local')                
+        elif opt.backdoor_type == "lira":
+            if opt.dataset == "mnist":
+                ckpt_path = os.path.join(opt.checkpoints, opt.dataset, "model_last.pt.tar")
+                classifier = MnistNet(name='Local')
+            elif opt.dataset == "cifar10":
+                ckpt_path = os.path.join(opt.checkpoints, opt.dataset, "lira_cifar10_vgg9_0.03.pt")
+                # classifier = ResNet18(name='Local')     
+                classifier = vgg9.VGG('VGG9')
+            
         print("Loaded checkpoint path successfully")
 
         state_dict = torch.load(ckpt_path)
         # classifier.load_state_dict(state_dict["netC"])
-        classifier.load_state_dict(state_dict["state_dict"])
+        if opt.backdoor_type != "lira":
+            classifier.load_state_dict(state_dict["state_dict"])         
+        else:
+            classifier.load_state_dict(state_dict)         
+            
 
         for param in classifier.parameters():
             param.requires_grad = False
@@ -132,7 +150,7 @@ class Recorder:
         print("Initialize cost to {:f}".format(self.cost))
 
     def save_result_to_dir(self, opt):
-        result_dir = os.path.join(opt.result, opt.dataset)
+        result_dir = os.path.join(opt.result, opt.dataset, opt.backdoor_type)
         if not os.path.exists(result_dir):
             os.makedirs(result_dir)
         result_dir = os.path.join(result_dir, opt.attack_mode)

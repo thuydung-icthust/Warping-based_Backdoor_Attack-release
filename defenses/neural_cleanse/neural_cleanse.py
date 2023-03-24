@@ -34,11 +34,11 @@ def outlier_detection(l1_norm_list, idx_mapping, opt):
         print("Not a backdoor model")
     else:
         print("This is a backdoor model")
-
+    opt.saving_prefix = ""
     if opt.to_file:
         result_path = os.path.join(opt.result, opt.saving_prefix, opt.dataset)
         output_path = os.path.join(
-            result_path, "{}_{}_output.txt".format(opt.attack_mode, opt.dataset, opt.attack_mode)
+            result_path, "{}_{}_{}_output.txt".format(opt.attack_mode, opt.dataset, opt.backdoor_type, opt.attack_mode)
         )
         with open(output_path, "a+") as f:
             f.write(
